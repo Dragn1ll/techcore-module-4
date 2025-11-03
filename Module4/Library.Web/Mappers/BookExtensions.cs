@@ -21,7 +21,6 @@ public static class BookExtensions
         {
             Title = request.Title,
             Description = request.Description,
-            Authors = request.Authors,
             Year = request.Year
         };
 

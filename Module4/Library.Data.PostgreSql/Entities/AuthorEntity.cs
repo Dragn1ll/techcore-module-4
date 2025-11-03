@@ -9,7 +9,7 @@ public class AuthorEntity
     public Guid Id { get; set; }
 
     /// <summary>ФИО автора</summary>
-    public Guid FullName { get; set; }
+    public string FullName { get; set; }
     
     /// <summary>Книги автора</summary>
     public ICollection<BookEntity> Books { get; set; }

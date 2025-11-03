@@ -28,11 +28,12 @@ public sealed class BookService : IBookService
             {
                 Title = createBook.Title,
                 Category = createBook.Category,
+                Authors = createBook.Authors.Select(n => GetAuthorIdByName(n).Result).ToList(),
                 Description = createBook.Description,
                 Year = createBook.Year
             };
             
-            _context.Books.Add(entity);
+            _context.Add(entity);
             await _context.SaveChangesAsync();
             
             return Result<Guid>.Success(entity.Id);
@@ -48,7 +49,8 @@ public sealed class BookService : IBookService
     {
         try
         {
-            var entity = await _context.Books.FindAsync(bookId);
+            var entity = await _context.Books.Include(b => b.Authors)
+                .FirstOrDefaultAsync(b => b.Id == bookId);
 
             if (entity == null)
             {
@@ -60,6 +62,7 @@ public sealed class BookService : IBookService
                 Id = bookId,
                 Title = entity.Title,
                 Category = entity.Category,
+                Authors = entity.Authors.Select(a => a.FullName).ToList(),
                 Description = entity.Description,
                 Year = entity.Year
             });
@@ -76,11 +79,13 @@ public sealed class BookService : IBookService
         try
         {
             var bookDtos = await _context.Books.AsNoTracking()
+                .Include(e => e.Authors)
                 .Select(e => new GetBookDto
                 {
                     Id = e.Id,
                     Title = e.Title,
                     Category = e.Category,
+                    Authors = e.Authors.Select(a => a.FullName).ToList(),
                     Description = e.Description,
                     Year = e.Year
                 })
@@ -142,5 +147,25 @@ public sealed class BookService : IBookService
         {
             return Result.Failure(new Error(ErrorType.ServerError, exception.Message));
         }
+    }
+
+    private async Task<AuthorEntity> GetAuthorIdByName(string fullName)
+    {
+        var tmpEntity = await _context.Authors.FirstOrDefaultAsync(a => a.FullName == fullName);
+
+        if (tmpEntity != null)
+        {
+            return tmpEntity;
+        }
+
+        var entity = new AuthorEntity
+        {
+            FullName = fullName
+        };
+        
+        _context.Add(entity);
+        await _context.SaveChangesAsync();
+        
+        return entity;
     }
 }

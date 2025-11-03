@@ -8,9 +8,6 @@ public sealed class UpdateBookDto
     /// <summary>Название книги</summary>
     public string Title { get; init; }
 
-    /// <summary>Авторы</summary>
-    public IReadOnlyList<string> Authors { get; init; }
-
     /// <summary>Краткое описание книги</summary>
     public string Description { get; init; }
 
