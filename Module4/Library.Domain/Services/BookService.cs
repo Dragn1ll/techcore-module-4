@@ -22,24 +22,41 @@ public sealed class BookService : IBookService
     /// <inheritdoc cref="IBookService.CreateAsync"/>
     public async Task<Result<Guid>> CreateAsync(CreateBookDto createBook)
     {
+        await using var transaction = await _context.Database.BeginTransactionAsync();
         try
         {
-            var entity = new BookEntity
+            var authors = new List<AuthorEntity>();
+            foreach (var fullName in createBook.Authors)
+            {
+                var author = await _context.Authors.FirstOrDefaultAsync(a => a.FullName == fullName);
+                if (author == null)
+                {
+                    author = new AuthorEntity { FullName = fullName };
+                    _context.Authors.Add(author);
+                }
+                authors.Add(author);
+            }
+
+            var book = new BookEntity
             {
                 Title = createBook.Title,
                 Category = createBook.Category,
-                Authors = createBook.Authors.Select(n => GetAuthorIdByName(n).Result).ToList(),
+                Authors = authors,
                 Description = createBook.Description,
                 Year = createBook.Year
             };
-            
-            _context.Add(entity);
+
+            _context.Books.Add(book);
             await _context.SaveChangesAsync();
-            
-            return Result<Guid>.Success(entity.Id);
+
+            await transaction.CommitAsync();
+
+            return Result<Guid>.Success(book.Id);
         }
         catch (Exception exception)
         {
+            // Откатываем транзакцию и пробрасываем ошибку
+            await transaction.RollbackAsync();
             return Result<Guid>.Failure(new Error(ErrorType.ServerError, exception.Message));
         }
     }
@@ -147,25 +164,5 @@ public sealed class BookService : IBookService
         {
             return Result.Failure(new Error(ErrorType.ServerError, exception.Message));
         }
-    }
-
-    private async Task<AuthorEntity> GetAuthorIdByName(string fullName)
-    {
-        var tmpEntity = await _context.Authors.FirstOrDefaultAsync(a => a.FullName == fullName);
-
-        if (tmpEntity != null)
-        {
-            return tmpEntity;
-        }
-
-        var entity = new AuthorEntity
-        {
-            FullName = fullName
-        };
-        
-        _context.Add(entity);
-        await _context.SaveChangesAsync();
-        
-        return entity;
     }
 }
