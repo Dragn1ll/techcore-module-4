@@ -1,0 +1,45 @@
+using Library.SharedKernel.Dto;
+using Library.SharedKernel.Utils;
+
+namespace Library.Domain.Abstractions.Services;
+
+/// <summary>
+/// Сервис по работе с книгами
+/// </summary>
+public interface IBookService
+{
+    /// <summary>
+    /// Создать книгу
+    /// </summary>
+    /// <param name="createBook">Данные новой книги</param>
+    /// <returns>Идентификатор книги</returns>
+    Task<Result<Guid>> CreateBook(CreateBookDto createBook);
+    
+    /// <summary>
+    /// Получить книгу по идентификатору
+    /// </summary>
+    /// <param name="bookId">Идентификатор книги</param>
+    /// <returns></returns>
+    Task<Result<GetBookDto>> GetBookById(Guid bookId);
+    
+    /// <summary>
+    /// Получить все книги
+    /// </summary>
+    /// <returns>Список книг</returns>
+    Task<Result<ICollection<GetBookDto>>> GetBooks();
+
+    /// <summary>
+    /// Обновить данные книги
+    /// </summary>
+    /// <param name="id">Идентификатор книги</param>
+    /// <param name="updateBook">Новые данные книги</param>
+    /// <returns>Выполнилось обновление данных</returns>
+    Task<Result> UpdateBook(Guid id, UpdateBookDto updateBook);
+    
+    /// <summary>
+    /// Удалить книгу по идентификатору
+    /// </summary>
+    /// <param name="id">Идентификатор книги</param>
+    /// <returns>Выполнилось ли удаление</returns>
+    Task<Result> DeleteBook(Guid id);
+}
