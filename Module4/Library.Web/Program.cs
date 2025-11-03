@@ -1,7 +1,9 @@
 using FluentValidation.AspNetCore;
 using Library.Contracts.Books.Request;
 using Library.Data.PostgreSql;
+using Library.Data.PostgreSql.Repositories;
 using Library.Domain.Abstractions.Services;
+using Library.Domain.Abstractions.Storage;
 using Library.Domain.Services;
 using Library.SharedKernel.Options;
 using Microsoft.AspNetCore.Diagnostics;
@@ -24,6 +26,7 @@ services.AddEndpointsApiExplorer();
 services.AddSwaggerGen();
 
 services.AddScoped<IBookService, BookService>();
+services.AddScoped<IBookRepository, BookRepository>();
 
 services.Configure<MySettings>(
     builder.Configuration.GetSection("MySettings"));

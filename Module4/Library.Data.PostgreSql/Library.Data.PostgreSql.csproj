@@ -13,6 +13,7 @@
     </ItemGroup>
 
     <ItemGroup>
+      <ProjectReference Include="..\Library.Domain\Library.Domain.csproj" />
       <ProjectReference Include="..\Library.SharedKernel\Library.SharedKernel.csproj" />
     </ItemGroup>
 

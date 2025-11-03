@@ -7,7 +7,6 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\Library.Data.PostgreSql\Library.Data.PostgreSql.csproj" />
       <ProjectReference Include="..\Library.SharedKernel\Library.SharedKernel.csproj" />
     </ItemGroup>
 

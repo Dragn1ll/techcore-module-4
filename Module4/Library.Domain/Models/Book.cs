@@ -7,11 +7,14 @@ namespace Library.Domain.Models;
 /// </summary>
 public sealed class Book
 {
+    /// <summary>Идентификатор книги</summary>
+    public Guid Id { get; init; }
+    
     /// <summary>Название книги</summary>
     public string Title { get; set; }
 
     /// <summary>Авторы</summary>
-    public IReadOnlyList<string> Authors { get; set; }
+    public IReadOnlyList<string> Authors { get; init; }
 
     /// <summary>Краткое описание книги</summary>
     public string Description { get; set; }
@@ -20,5 +23,5 @@ public sealed class Book
     public int Year { get; set; }
 
     /// <summary>Категория</summary>
-    public BookCategory Category { get; set; }
+    public BookCategory Category { get; init; }
 }

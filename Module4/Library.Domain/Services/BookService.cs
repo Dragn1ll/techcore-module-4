@@ -1,62 +1,40 @@
-using Library.Data.PostgreSql;
-using Library.Data.PostgreSql.Entities;
 using Library.Domain.Abstractions.Services;
+using Library.Domain.Abstractions.Storage;
 using Library.Domain.Models;
 using Library.SharedKernel.Dto;
 using Library.SharedKernel.Enums;
 using Library.SharedKernel.Utils;
-using Microsoft.EntityFrameworkCore;
 
 namespace Library.Domain.Services;
 
 /// <inheritdoc cref="IBookService"/>
 public sealed class BookService : IBookService
 {
-    private readonly BookContext _context;
+    private readonly IBookRepository _bookRepository;
 
-    public BookService(BookContext context)
+    public BookService(IBookRepository bookRepository)
     {
-        _context = context;
+        _bookRepository = bookRepository;
     }
     
     /// <inheritdoc cref="IBookService.CreateAsync"/>
     public async Task<Result<Guid>> CreateAsync(CreateBookDto createBook)
     {
-        await using var transaction = await _context.Database.BeginTransactionAsync();
         try
         {
-            var authors = new List<AuthorEntity>();
-            foreach (var fullName in createBook.Authors)
-            {
-                var author = await _context.Authors.FirstOrDefaultAsync(a => a.FullName == fullName);
-                if (author == null)
-                {
-                    author = new AuthorEntity { FullName = fullName };
-                    _context.Authors.Add(author);
-                }
-                authors.Add(author);
-            }
-
-            var book = new BookEntity
+            var bookId = await _bookRepository.AddAsync(new Book
             {
                 Title = createBook.Title,
-                Category = createBook.Category,
-                Authors = authors,
                 Description = createBook.Description,
-                Year = createBook.Year
-            };
-
-            _context.Books.Add(book);
-            await _context.SaveChangesAsync();
-
-            await transaction.CommitAsync();
-
-            return Result<Guid>.Success(book.Id);
+                Authors = createBook.Authors,
+                Year = createBook.Year,
+                Category = createBook.Category
+            });
+            
+            return Result<Guid>.Success(bookId);
         }
         catch (Exception exception)
         {
-            // Откатываем транзакцию и пробрасываем ошибку
-            await transaction.RollbackAsync();
             return Result<Guid>.Failure(new Error(ErrorType.ServerError, exception.Message));
         }
     }
@@ -66,10 +44,9 @@ public sealed class BookService : IBookService
     {
         try
         {
-            var entity = await _context.Books.Include(b => b.Authors)
-                .FirstOrDefaultAsync(b => b.Id == bookId);
+            var book = await _bookRepository.GetByIdAsync(bookId);
 
-            if (entity == null)
+            if (book == null)
             {
                 return Result<GetBookDto>.Failure(new Error(ErrorType.NotFound, "Книга не найдена"));
             }
@@ -77,11 +54,11 @@ public sealed class BookService : IBookService
             return Result<GetBookDto>.Success(new GetBookDto
             {
                 Id = bookId,
-                Title = entity.Title,
-                Category = entity.Category,
-                Authors = entity.Authors.Select(a => a.FullName).ToList(),
-                Description = entity.Description,
-                Year = entity.Year
+                Title = book.Title,
+                Category = book.Category,
+                Authors = book.Authors,
+                Description = book.Description,
+                Year = book.Year
             });
         }
         catch (Exception exception)
@@ -95,20 +72,19 @@ public sealed class BookService : IBookService
     {
         try
         {
-            var bookDtos = await _context.Books.AsNoTracking()
-                .Include(e => e.Authors)
+            var books = await _bookRepository.GetAllAsync();
+
+            return Result<ICollection<GetBookDto>>.Success(books
                 .Select(e => new GetBookDto
                 {
                     Id = e.Id,
                     Title = e.Title,
                     Category = e.Category,
-                    Authors = e.Authors.Select(a => a.FullName).ToList(),
+                    Authors = e.Authors,
                     Description = e.Description,
                     Year = e.Year
                 })
-                .ToListAsync();
-
-            return Result<ICollection<GetBookDto>>.Success(bookDtos);
+                .ToList());
         }
         catch (Exception exception)
         {
@@ -121,19 +97,18 @@ public sealed class BookService : IBookService
     {
         try
         {
-            var entity = await _context.Books.FindAsync(id);
+            var book = await _bookRepository.GetByIdAsync(id);
             
-            if (entity == null)
+            if (book == null)
             {
                 return Result.Failure(new Error(ErrorType.NotFound, "Книга не найдена"));
             }
 
-            entity.Title = updateBook.Title;
-            entity.Description = updateBook.Description;
-            entity.Year = updateBook.Year;
+            book.Title = updateBook.Title;
+            book.Description = updateBook.Description;
+            book.Year = updateBook.Year;
             
-            _context.Books.Update(entity);
-            await _context.SaveChangesAsync();
+            await _bookRepository.UpdateAsync(book);
 
             return Result.Success();
         }
@@ -144,19 +119,18 @@ public sealed class BookService : IBookService
     }
 
     /// <inheritdoc cref="IBookService.DeleteBook"/>
-    public async Task<Result> DeleteBook(Guid id)
+    public async Task<Result> DeleteBook(Guid bookId)
     {
         try
         {
-            var entity = await _context.Books.FindAsync(id);
+            var book = await _bookRepository.GetByIdAsync(bookId);
 
-            if (entity == null)
+            if (book == null)
             {
                 return Result.Failure(new Error(ErrorType.NotFound, "Книга не найдена"));
             }
 
-            _context.Books.Remove(entity);
-            await _context.SaveChangesAsync();
+            await _bookRepository.DeleteAsync(bookId);
             
             return Result.Success();
         }
