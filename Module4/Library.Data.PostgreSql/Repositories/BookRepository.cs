@@ -49,7 +49,8 @@ public class BookRepository : IBookRepository
     /// <inheritdoc cref="IBookRepository.GetByIdAsync"/>
     public async Task<Book?> GetByIdAsync(Guid bookId)
     {
-        var entity = await _context.Books.Include(b => b.Authors)
+        var entity = await _context.Books.AsNoTracking()
+            .Include(b => b.Authors)
             .FirstOrDefaultAsync(b => b.Id == bookId);
         
         return entity == null ? null : new Book
@@ -67,6 +68,7 @@ public class BookRepository : IBookRepository
     public async Task<ICollection<Book>> GetAllAsync()
     {
         return await _context.Books
+            .AsNoTracking()
             .Include(b => b.Authors)
             .Select(e => new Book
             {
