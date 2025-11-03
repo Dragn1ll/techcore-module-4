@@ -14,8 +14,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Library.Data.PostgreSql", "
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "solution items", "solution items", "{1017B06B-8A47-4DC2-82A7-A3D87A5549B0}"
 	ProjectSection(SolutionItems) = preProject
-		.env = .env
-		docker-compose.yaml = docker-compose.yaml
+		compose.yaml = compose.yaml
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{ADD06260-3AF4-4D82-9F32-35AE747807BF}"
