@@ -1,12 +1,14 @@
 using Library.SharedKernel.Enums;
 
-namespace Library.SharedKernel.Dto;
+namespace Library.Domain.Dto;
 
 /// <summary>
-/// Данные для создания книги
+/// Данные книги для получения
 /// </summary>
-public sealed class CreateBookDto
+public sealed class GetBookDto
 {
+    public Guid Id { get; init; }
+    
     /// <summary>Название книги</summary>
     public string Title { get; init; }
 

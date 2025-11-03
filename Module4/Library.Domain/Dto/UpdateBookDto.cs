@@ -1,4 +1,4 @@
-namespace Library.SharedKernel.Dto;
+namespace Library.Domain.Dto;
 
 /// <summary>
 /// Данные для обновления книги

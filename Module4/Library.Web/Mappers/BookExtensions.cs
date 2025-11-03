@@ -1,6 +1,6 @@
 using Library.Contracts.Books.Request;
 using Library.Contracts.Books.Response;
-using Library.SharedKernel.Dto;
+using Library.Domain.Dto;
 
 namespace Library.Web.Mappers;
 

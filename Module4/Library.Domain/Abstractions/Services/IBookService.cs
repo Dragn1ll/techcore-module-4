@@ -1,4 +1,4 @@
-using Library.SharedKernel.Dto;
+using Library.Domain.Dto;
 using Library.SharedKernel.Utils;
 
 namespace Library.Domain.Abstractions.Services;

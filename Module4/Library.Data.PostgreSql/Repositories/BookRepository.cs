@@ -1,12 +1,15 @@
+using System.Data;
+using Dapper;
 using Library.Data.PostgreSql.Entities;
 using Library.Domain.Abstractions.Storage;
+using Library.Domain.Dto;
 using Library.Domain.Models;
 using Microsoft.EntityFrameworkCore;
 
 namespace Library.Data.PostgreSql.Repositories;
 
 /// <inheritdoc cref="IBookRepository"/>
-public class BookRepository : IBookRepository
+public sealed class BookRepository : IBookRepository
 {
     private readonly BookContext _context;
 
@@ -104,6 +107,28 @@ public class BookRepository : IBookRepository
         
         _context.Books.Remove(entity);
         await _context.SaveChangesAsync();
+    }
+    
+    public async Task<ICollection<ReportDto>> GetAuthorReportAsync()
+    {
+        var sql = @"
+                    SELECT a.""FullName"", COUNT(ba.""BookId"") as BookCount
+                    FROM ""Authors"" a
+                    LEFT JOIN ""BookEntityAuthorEntity"" ba ON a.""Id"" = ba.""AuthorEntityId""
+                    GROUP BY a.""FullName""
+                    ORDER BY BookCount DESC;
+                    ";
+
+        await using var connection = _context.Database.GetDbConnection();
+
+        if (connection.State == ConnectionState.Closed)
+        {
+            await connection.OpenAsync();
+        }
+
+        var result = await connection.QueryAsync<ReportDto>(sql);
+
+        return result.ToList();
     }
 
     private async Task<ICollection<AuthorEntity>> GetAuthorsAsync(Book book)
