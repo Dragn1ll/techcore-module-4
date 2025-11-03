@@ -14,7 +14,7 @@ public class BookEntity
     public string Title { get; set; }
 
     /// <summary>Авторы</summary>
-    public IReadOnlyList<string> Authors { get; set; }
+    public ICollection<AuthorEntity> Authors { get; set; }
 
     /// <summary>Краткое описание книги</summary>
     public string Description { get; set; }

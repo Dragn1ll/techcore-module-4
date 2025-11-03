@@ -27,7 +27,6 @@ public sealed class BookService : IBookService
             var entity = new BookEntity
             {
                 Title = createBook.Title,
-                Authors = createBook.Authors,
                 Category = createBook.Category,
                 Description = createBook.Description,
                 Year = createBook.Year
@@ -60,7 +59,6 @@ public sealed class BookService : IBookService
             {
                 Id = bookId,
                 Title = entity.Title,
-                Authors = entity.Authors,
                 Category = entity.Category,
                 Description = entity.Description,
                 Year = entity.Year
@@ -82,7 +80,6 @@ public sealed class BookService : IBookService
                 {
                     Id = e.Id,
                     Title = e.Title,
-                    Authors = e.Authors,
                     Category = e.Category,
                     Description = e.Description,
                     Year = e.Year
@@ -110,7 +107,6 @@ public sealed class BookService : IBookService
             }
 
             entity.Title = updateBook.Title;
-            entity.Authors = updateBook.Authors;
             entity.Description = updateBook.Description;
             entity.Year = updateBook.Year;
             
@@ -125,8 +121,8 @@ public sealed class BookService : IBookService
         }
     }
 
-    /// <inheritdoc cref="IBookService.DeleteAsync"/>
-    public async Task<Result> DeleteAsync(Guid id)
+    /// <inheritdoc cref="IBookService.DeleteBook"/>
+    public async Task<Result> DeleteBook(Guid id)
     {
         try
         {

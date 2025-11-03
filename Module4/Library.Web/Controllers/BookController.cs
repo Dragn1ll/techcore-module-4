@@ -60,7 +60,7 @@ public sealed class BookController (IBookService bookService) : Controller
     [HttpDelete("{id:guid}")]
     public async Task<ActionResult> DeleteBook([FromRoute] Guid id)
     {
-        var result = await bookService.DeleteAsync(id);
+        var result = await bookService.DeleteBook(id);
         
         return result.IsSuccess 
             ? Ok() 

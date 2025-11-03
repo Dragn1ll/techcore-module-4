@@ -13,9 +13,6 @@ public class BookConfiguration : IEntityTypeConfiguration<BookEntity>
         builder.Property(b => b.Title)
             .HasMaxLength(500)
             .IsRequired();
-
-        builder.Property(b => b.Authors)
-            .IsRequired();
         
         builder.Property(b => b.Description)
             .HasMaxLength(2000)
@@ -23,5 +20,8 @@ public class BookConfiguration : IEntityTypeConfiguration<BookEntity>
 
         builder.Property(b => b.Year)
             .IsRequired();
+
+        builder.HasMany(b => b.Authors)
+            .WithMany(a => a.Books);
     }
 }

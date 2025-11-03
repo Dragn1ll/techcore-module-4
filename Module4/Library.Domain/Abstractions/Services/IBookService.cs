@@ -41,5 +41,5 @@ public interface IBookService
     /// </summary>
     /// <param name="id">Идентификатор книги</param>
     /// <returns>Выполнилось ли удаление</returns>
-    Task<Result> DeleteAsync(Guid id);
+    Task<Result> DeleteBook(Guid id);
 }

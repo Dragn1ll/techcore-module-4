@@ -13,5 +13,8 @@ public class AuthorConfiguration : IEntityTypeConfiguration<AuthorEntity>
         builder.Property(a => a.FullName).IsRequired();
         
         builder.HasIndex(a => a.FullName).IsUnique();
+
+        builder.HasMany(a => a.Books)
+            .WithMany(b => b.Authors);
     }
 }
