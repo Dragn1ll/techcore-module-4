@@ -13,20 +13,20 @@ public interface IBookService
     /// </summary>
     /// <param name="createBook">Данные новой книги</param>
     /// <returns>Идентификатор книги</returns>
-    Task<Result<Guid>> CreateBook(CreateBookDto createBook);
+    Task<Result<Guid>> CreateAsync(CreateBookDto createBook);
     
     /// <summary>
     /// Получить книгу по идентификатору
     /// </summary>
     /// <param name="bookId">Идентификатор книги</param>
     /// <returns></returns>
-    Task<Result<GetBookDto>> GetBookById(Guid bookId);
+    Task<Result<GetBookDto>> GetByIdAsync(Guid bookId);
     
     /// <summary>
     /// Получить все книги
     /// </summary>
     /// <returns>Список книг</returns>
-    Task<Result<ICollection<GetBookDto>>> GetBooks();
+    Task<Result<ICollection<GetBookDto>>> GetAllAsync();
 
     /// <summary>
     /// Обновить данные книги
@@ -34,12 +34,12 @@ public interface IBookService
     /// <param name="id">Идентификатор книги</param>
     /// <param name="updateBook">Новые данные книги</param>
     /// <returns>Выполнилось обновление данных</returns>
-    Task<Result> UpdateBook(Guid id, UpdateBookDto updateBook);
+    Task<Result> UpdateAsync(Guid id, UpdateBookDto updateBook);
     
     /// <summary>
     /// Удалить книгу по идентификатору
     /// </summary>
     /// <param name="id">Идентификатор книги</param>
     /// <returns>Выполнилось ли удаление</returns>
-    Task<Result> DeleteBook(Guid id);
+    Task<Result> DeleteAsync(Guid id);
 }

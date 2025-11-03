@@ -13,7 +13,7 @@ public sealed class BookController (IBookService bookService) : Controller
     [HttpPost]
     public async Task<ActionResult> CreateBook([FromBody] CreateBookRequest request)
     {
-        var result = await bookService.CreateBook(request.ToCreateBookDto());
+        var result = await bookService.CreateAsync(request.ToCreateBookDto());
         
         return result.IsSuccess 
             ? Ok(new CreateBookResponse(result.Value)) 
@@ -23,7 +23,7 @@ public sealed class BookController (IBookService bookService) : Controller
     [HttpGet]
     public async Task<ActionResult> GetBooks()
     {
-        var result = await bookService.GetBooks();
+        var result = await bookService.GetAllAsync();
             
         return result.IsSuccess 
             ? Ok(result.Value!.Select(gbd => gbd.ToGetBookResponse()).ToList()) 
@@ -35,7 +35,7 @@ public sealed class BookController (IBookService bookService) : Controller
     {
         try
         {
-            var result = await bookService.GetBookById(id);
+            var result = await bookService.GetByIdAsync(id);
         
             return result.IsSuccess 
                 ? Ok(result.Value!.ToGetBookResponse())
@@ -50,7 +50,7 @@ public sealed class BookController (IBookService bookService) : Controller
     [HttpPut("{id:guid}")]
     public async Task<ActionResult> UpdateBook([FromRoute] Guid id, [FromBody] UpdateBookRequest request)
     {
-        var result = await bookService.UpdateBook(id, request.ToUpdateBookDto());
+        var result = await bookService.UpdateAsync(id, request.ToUpdateBookDto());
             
         return result.IsSuccess 
             ? Ok()
@@ -60,7 +60,7 @@ public sealed class BookController (IBookService bookService) : Controller
     [HttpDelete("{id:guid}")]
     public async Task<ActionResult> DeleteBook([FromRoute] Guid id)
     {
-        var result = await bookService.DeleteBook(id);
+        var result = await bookService.DeleteAsync(id);
         
         return result.IsSuccess 
             ? Ok() 

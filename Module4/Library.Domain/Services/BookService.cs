@@ -1,40 +1,42 @@
+using Library.Data.PostgreSql;
+using Library.Data.PostgreSql.Entities;
 using Library.Domain.Abstractions.Services;
 using Library.Domain.Models;
 using Library.SharedKernel.Dto;
 using Library.SharedKernel.Enums;
 using Library.SharedKernel.Utils;
+using Microsoft.EntityFrameworkCore;
 
 namespace Library.Domain.Services;
 
 /// <inheritdoc cref="IBookService"/>
 public sealed class BookService : IBookService
 {
-    private readonly Dictionary<Guid, Book> _books;
+    private readonly BookContext _context;
 
-    public BookService()
+    public BookService(BookContext context)
     {
-        _books = [];
+        _context = context;
     }
     
-    /// <inheritdoc cref="IBookService.CreateBook"/>
-    public async Task<Result<Guid>> CreateBook(CreateBookDto createBook)
+    /// <inheritdoc cref="IBookService.CreateAsync"/>
+    public async Task<Result<Guid>> CreateAsync(CreateBookDto createBook)
     {
-        await Task.Delay(100);
-
         try
         {
-            var bookId = Guid.NewGuid();
-            
-            _books.Add(bookId, new Book()
+            var entity = new BookEntity
             {
                 Title = createBook.Title,
                 Authors = createBook.Authors,
                 Category = createBook.Category,
                 Description = createBook.Description,
                 Year = createBook.Year
-            });
+            };
             
-            return Result<Guid>.Success(bookId);
+            _context.Books.Add(entity);
+            await _context.SaveChangesAsync();
+            
+            return Result<Guid>.Success(entity.Id);
         }
         catch (Exception exception)
         {
@@ -42,14 +44,14 @@ public sealed class BookService : IBookService
         }
     }
 
-    /// <inheritdoc cref="IBookService.GetBookById"/>
-    public async Task<Result<GetBookDto>> GetBookById(Guid bookId)
+    /// <inheritdoc cref="IBookService.GetByIdAsync"/>
+    public async Task<Result<GetBookDto>> GetByIdAsync(Guid bookId)
     {
         try
         {
-            await Task.Delay(100);
+            var entity = await _context.Books.FindAsync(bookId);
 
-            if (!_books.TryGetValue(bookId, out var book))
+            if (entity == null)
             {
                 return Result<GetBookDto>.Failure(new Error(ErrorType.NotFound, "Книга не найдена"));
             }
@@ -57,11 +59,11 @@ public sealed class BookService : IBookService
             return Result<GetBookDto>.Success(new GetBookDto
             {
                 Id = bookId,
-                Title = book.Title,
-                Authors = book.Authors,
-                Category = book.Category,
-                Description = book.Description,
-                Year = book.Year
+                Title = entity.Title,
+                Authors = entity.Authors,
+                Category = entity.Category,
+                Description = entity.Description,
+                Year = entity.Year
             });
         }
         catch (Exception exception)
@@ -70,23 +72,22 @@ public sealed class BookService : IBookService
         }
     }
 
-    /// <inheritdoc cref="IBookService.GetBooks"/>
-    public async Task<Result<ICollection<GetBookDto>>> GetBooks()
+    /// <inheritdoc cref="IBookService.GetAllAsync"/>
+    public async Task<Result<ICollection<GetBookDto>>> GetAllAsync()
     {
         try
         {
-            await Task.Delay(100);
-
-            var bookDtos = _books.Keys.Select(bookId => new GetBookDto
+            var bookDtos = await _context.Books.AsNoTracking()
+                .Select(e => new GetBookDto
                 {
-                    Id = bookId,
-                    Title = _books[bookId].Title,
-                    Authors = _books[bookId].Authors,
-                    Category = _books[bookId].Category,
-                    Description = _books[bookId].Description,
-                    Year = _books[bookId].Year
+                    Id = e.Id,
+                    Title = e.Title,
+                    Authors = e.Authors,
+                    Category = e.Category,
+                    Description = e.Description,
+                    Year = e.Year
                 })
-                .ToList();
+                .ToListAsync();
 
             return Result<ICollection<GetBookDto>>.Success(bookDtos);
         }
@@ -96,22 +97,25 @@ public sealed class BookService : IBookService
         }
     }
 
-    /// <inheritdoc cref="IBookService.UpdateBook"/>
-    public async Task<Result> UpdateBook(Guid id, UpdateBookDto updateBook)
+    /// <inheritdoc cref="IBookService.UpdateAsync"/>
+    public async Task<Result> UpdateAsync(Guid id, UpdateBookDto updateBook)
     {
         try
         {
-            await Task.Delay(100);
+            var entity = await _context.Books.FindAsync(id);
             
-            if (!_books.TryGetValue(id, out var book))
+            if (entity == null)
             {
                 return Result.Failure(new Error(ErrorType.NotFound, "Книга не найдена"));
             }
 
-            book.Title = updateBook.Title;
-            book.Authors = updateBook.Authors;
-            book.Description = updateBook.Description;
-            book.Year = updateBook.Year;
+            entity.Title = updateBook.Title;
+            entity.Authors = updateBook.Authors;
+            entity.Description = updateBook.Description;
+            entity.Year = updateBook.Year;
+            
+            _context.Books.Update(entity);
+            await _context.SaveChangesAsync();
 
             return Result.Success();
         }
@@ -121,19 +125,20 @@ public sealed class BookService : IBookService
         }
     }
 
-    /// <inheritdoc cref="IBookService.DeleteBook"/>
-    public async Task<Result> DeleteBook(Guid id)
+    /// <inheritdoc cref="IBookService.DeleteAsync"/>
+    public async Task<Result> DeleteAsync(Guid id)
     {
         try
         {
-            var getResult = await GetBookById(id);
+            var entity = await _context.Books.FindAsync(id);
 
-            if (!getResult.IsSuccess)
+            if (entity == null)
             {
-                return getResult;
+                return Result.Failure(new Error(ErrorType.NotFound, "Книга не найдена"));
             }
 
-            _books.Remove(id);
+            _context.Books.Remove(entity);
+            await _context.SaveChangesAsync();
             
             return Result.Success();
         }
